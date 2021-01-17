@@ -1,0 +1,155 @@
+<link
+  rel="stylesheet"
+  href="https://cloud-1fp0798lb.vercel.app/0simple-grid.css"
+/>
+<div class="container">
+  <div class="row">
+    <div class="col-6"></div>
+    <div class="col-6">
+      <h1 style="font-size: 96px">
+        <div class="row">
+          <div class="col-4" id="number"></div>
+          <div class="col-8" style="padding-top: 12px;">
+            <span style="font-size: 36px"><span>Casualties taken</span></span>
+          </div>
+        </div>
+      </h1>
+      <img id="img-1" height="200px" />
+      <img id="img-2" height="200px" />
+      <img id="img-3" height="200px" />
+      <img id="img-4" height="200px" />
+      <img id="img-5" height="200px" />
+      <img id="img-6" height="200px" />
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+<script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+<script type="text/javascript">
+  function sleepFor(sleepDuration) {
+    var now = new Date().getTime();
+    while (new Date().getTime() < now + sleepDuration) {
+      /* do nothing */
+    }
+  }
+
+  let dataImages = [];
+  
+  let amount = 0
+
+  let milli = 0
+
+  let camerasTimeOut;
+  // Classifier Variable
+  let classifier;
+  // Model URL
+  let imageModelURL =
+    "https://teachablemachine.withgoogle.com/models/tNQ5gEcWt/";
+
+  // Video
+  let video;
+  let flippedVideo;
+  // To store the classification
+  let label = "";
+
+  // Load the model first
+  function preload() {
+    classifier = ml5.imageClassifier(imageModelURL + "model.json");
+  }
+
+  function setup() {
+    let cnv = createCanvas(windowWidth / 2, windowHeight);
+    cnv.position(0, 0);
+    // Create the video
+    video = createCapture(VIDEO);
+    video.size(windowWidth / 2, windowHeight);
+    video.hide();
+
+    flippedVideo = ml5.flipImage(video);
+    // Start classifying
+    classifyVideo();
+  }
+
+  function draw() {
+    background(0);
+    // Draw the video
+    image(flippedVideo, 0, 0);
+    filter(GRAY);
+    // Draw the label
+    fill(255);
+    textSize(16);
+    textAlign(CENTER);
+    text(label, width / 2, height - 4);
+    document.getElementById("number").innerText = amount
+  }
+
+  // Get a prediction for the current video frame
+  function classifyVideo() {
+    flippedVideo = ml5.flipImage(video);
+    classifier.classify(flippedVideo, gotResult);
+    flippedVideo.remove();
+  }
+
+  // When we get a result
+  async function gotResult(error, results) {
+    // If there is an error
+    if (error) {
+      console.error(error);
+      return;
+    }
+    // The results are in an array ordered by confidence.
+    console.log(results[0]);
+    if (results[0].label == "On The Stairs") {
+      var d = new Date();
+      var n = d.getTime();
+      console.log(n)
+      console.log(milli)
+      if(n - 500 > milli){
+        fetch('http://192.168.1.115/fire')
+        milli = n
+
+        amount += 1
+      }
+      var canvas = document.getElementById("defaultCanvas0");
+      var dataURL = canvas.toDataURL();
+      dataImages.unshift(dataURL);
+      document.getElementById("img-1").src = dataImages[00] ? dataImages[0] : dataImages[10];
+      document.getElementById("img-2").src = dataImages[20] ? dataImages[20] : "https://i.redd.it/93s6xdca18zz.jpg";
+      document.getElementById("img-3").src = dataImages[30] ? dataImages[30] : "https://i.redd.it/93s6xdca18zz.jpg";
+      document.getElementById("img-4").src = dataImages[40] ? dataImages[40] : "https://i.redd.it/93s6xdca18zz.jpg";
+      document.getElementById("img-5").src = dataImages[50] ? dataImages[50] : "https://i.redd.it/93s6xdca18zz.jpg";
+      document.getElementById("img-6").src = dataImages[60] ?  dataImages[60] : "https://i.redd.it/93s6xdca18zz.jpg";
+      // sleepFor(20000);
+    }
+    label = "Live from the staircase.";
+    // Classifiy again!
+    classifyVideo();
+  }
+</script>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+  body {
+    margin: 0;
+    background: black;
+    color: green;
+    font-family: "Press Start 2P", cursive;
+  }
+  .container {
+    width: 100% !important;
+    max-width: 100rem !important;
+  }
+
+  img {
+    margin-top: 16px;
+    width: 200px;
+  }
+  img {
+    display: none;
+  }
+
+  img[src] {
+    display: inline;
+  }
+</style>
